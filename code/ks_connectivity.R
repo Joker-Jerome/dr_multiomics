@@ -37,5 +37,33 @@ library(dplyr)
 
 
 # main function ks score
-ks_score <- function(up_signature, down_signature, rank_matrix) {
+ks_score <- function(up_signature, down_signature, rank_matrix, compound_name) {
+    n = 1
+    connectivity_score_vec <- c()
+    gene_rank_bing <- rank_matrix
+    for (i in 1:ncol(gene_rank_bing)) {
+        if (i %% 500 == 0)  { print(paste0("INFO: ", i, " Instances."))}
+        pert_vec <- gene_rank_bing[, i]
+        up_signature <- up_signature[up_signature %in% pert_vec]   
+        down_signature <- down_signature[down_signature %in% pert_vec]
+        # get teh rank
+        up_v <- match(up_signature, pert_vec)
+        down_v <- match(down_signature, pert_vec)
+        tmp_s <- .s(up_v, down_v, nrow(gene_rank_bing))
+        connectivity_score_vec <- c(connectivity_score_vec, tmp_s)
+        
+    }
+    output_df <- data.frame(compound_name = compound_name, connectivity_score = connectivity_score_vec)
+    return(output_df)
+    
 }
+
+# data loading 
+ks_score_vec <- ks_score(up_signature_df$entrezgene_id, down_signature_df$entrezgene_id, gene_rank_bing, compound_name)
+ks_score_df <- ks_score_vec %>% 
+    arrange(desc(connectivity_score))
+
+
+
+
+
