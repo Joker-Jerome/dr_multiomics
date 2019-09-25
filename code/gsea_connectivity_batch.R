@@ -1,6 +1,14 @@
+## Read arguments
+args = commandArgs(trailingOnly=TRUE)
+idx = as.numeric(args[1])
+data_file = args[2]
 
+# library 
+library(dplyr)
+library(data.table)
 
-
+# "./data/gsea_res_2019_09_24.RData"
+load(data_file)
 
 
 # GSEA connectivity score
@@ -52,14 +60,10 @@ check_overlap <- function(gsea_df, nash_drugs) {
 }
 
 
-save(rank_matrix, row_mtx, up_signature, down_signature, complete_cor_vec_df, complete_cor_vec, gsea_df, compound_name, nash_drugs, file = "./data/gsea_res_2019_09_24.RData")
+#save(rank_matrix, row_mtx, up_signature, down_signature, complete_cor_vec_df, complete_cor_vec, gsea_df, compound_name, nash_drugs, file = "./data/gsea_res_2019_09_24.RData")
 
 
 
-gsea_df_list <- list()
-gsea_df_list[["100"]] <- gsea_drug(100, rank_matrix, up_signature, down_signature, complete_cor_vec, compound_name)
-gsea_df_list[["200"]] <- gsea_drug(100, rank_matrix, up_signature, down_signature, complete_cor_vec, compound_name)
-gsea_df_list[["500"]] <- gsea_drug(100, rank_matrix, up_signature, down_signature, complete_cor_vec, compound_name)
-gsea_df_list[["1000"]] <- gsea_drug(100, rank_matrix, up_signature, down_signature, complete_cor_vec, compound_name)
-gsea_df_list[["1500"]] <- gsea_drug(100, rank_matrix, up_signature, down_signature, complete_cor_vec, compound_name)
-gsea_df_list[["2000"]] <- gsea_drug(100, rank_matrix, up_signature, down_signature, complete_cor_vec, compound_name)
+
+gsea_df <- gsea_drug(idx, rank_matrix, up_signature, down_signature, complete_cor_vec, compound_name)
+save(gsea_df, file = paste0("../data/gsea_connectivity_score_df_", idx, ".RData"))
