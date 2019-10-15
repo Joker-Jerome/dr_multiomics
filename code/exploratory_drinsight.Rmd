@@ -1,0 +1,62 @@
+---
+title: "drinsight_nash"
+author: "Jerome"
+date: "10/14/2019"
+output: html_document
+---
+
+# library
+```{r}
+suppressMessages(library(DrInsight))
+```
+
+# example data
+```{r}
+
+data("example.pathway")
+data("example.disease")
+data("example.drug.profiles")
+
+
+```
+
+
+```{r}
+head(example.pathway)
+```
+
+
+```{r}
+head(example.disease)
+```
+
+
+
+```{r}
+
+head(example.drug.profiles)
+```
+drug.profiles save two sub objects: drug-rank-matrix and drug info.
+
+
+# main function
+```{r}
+drug.ident.res = drug.ident(query.data = example.disease, cmap.ref.profiles = example.drug.profiles,
+repurposing.unit = "treatment", connectivity = "negative")
+
+drug.pvals = drug.ident.res$drug.pvals
+
+
+```
+
+arguments: 
+The parameter of either "treatment" or "drug", which indicates if user want the
+algorithm to test drug repurposing p value at treatment level or drug level. The
+default is "treatment", which treats the drug data from different cell lines separately.
+
+
+# customize input data 
+```{r}
+signature_constructor 
+```
+
