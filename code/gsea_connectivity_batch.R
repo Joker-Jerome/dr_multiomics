@@ -17,6 +17,7 @@ gsea_drug <- function(num_gene, rank_matrix, up_signature, down_signature, compl
     drug_top_mtx <- rank_matrix[1:num_gene, ]
     drug_button_mtx <- rank_matrix[(row_mtx-num_gene+1):row_mtx,]
     es_vec <- c()
+    output_list <- list()
     for (i in 1:ncol(rank_matrix)) {
         if (i %% 200 == 0) { print(paste0("INFO: ", i))}
         top_vec <- drug_top_mtx[, i]
@@ -25,8 +26,8 @@ gsea_drug <- function(num_gene, rank_matrix, up_signature, down_signature, compl
         button_cor_vec <- complete_cor_vec[complete_cor_vec_df$entrezgene_id %in% button_vec]
         up_pathway <- list(deg = as.character(up_signature))
         down_pathway <- list(deg = as.character(down_signature))
-        up_res <- fgsea::fgsea(up_pathway, top_cor_vec, nperm=100, maxSize=500)
-        down_res <- fgsea::fgsea(down_pathway, button_cor_vec, nperm=100, maxSize=500)
+        up_res <- fgsea::fgsea(up_pathway, top_cor_vec, nperm=1000, maxSize=500)
+        down_res <- fgsea::fgsea(down_pathway, button_cor_vec, nperm=1000, maxSize=500)
         if (nrow(up_res) == 0) { up_score <- 0 }
         else {up_score <- up_res$ES} 
         if (nrow(down_res) == 0) { down_score <- 0 }
@@ -34,11 +35,13 @@ gsea_drug <- function(num_gene, rank_matrix, up_signature, down_signature, compl
         
         es <-  up_score - down_score 
         es_vec <- c(es_vec, es)
+        output_list[[i]] <- list(up_gsea_results = up_res, down_gsea_results = down_res) 
     }
     gsea_df<- data.frame(drug_name = compound_name, gsea_enrichment_score = es_vec)
     gsea_df_ordered <- gsea_df %>% 
         dplyr::arrange(desc(gsea_enrichment_score))
-    return(gsea_df_ordered)
+    output_list[["gsea_df_ordered"]] <- gsea_df_ordered
+    return(output_list)
     
 }
 
@@ -65,5 +68,5 @@ check_overlap <- function(gsea_df, nash_drugs) {
 
 
 
-gsea_df <- gsea_drug(idx, rank_matrix, up_signature, down_signature, complete_cor_vec, compound_name)
-save(gsea_df, file = paste0("../data/gsea_connectivity_score_df_", idx, ".RData"))
+gsea_list <- gsea_drug(idx, rank_matrix, up_signature, down_signature, complete_cor_vec, compound_name)
+save(gsea_list, file = paste0("../data/gsea_connectivity_score_list_", idx, ".RData"))

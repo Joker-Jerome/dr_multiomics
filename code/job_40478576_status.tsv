@@ -1,0 +1,10 @@
+9	1	c14n07.farnam.hpc.yale.internal	2019-09-26 00:28:51	2019-09-26 00:29:11	20.64	module load R/3.5.0-foss-2016b-avx2; Rscript gsea_connectivity_batch.R 10000 ../data/gsea_res_2019_09_24.RData
+0	0	p02r09n23.farnam.hpc.yale.internal	2019-09-26 00:28:26	2019-09-26 00:37:08	522.19	module load R/3.5.0-foss-2016b-avx2;  Rscript gsea_connectivity_batch.R 100 ../data/gsea_res_2019_09_24.RData
+1	0	p02r09n24.farnam.hpc.yale.internal	2019-09-26 00:28:26	2019-09-26 00:39:36	670.22	module load R/3.5.0-foss-2016b-avx2; Rscript gsea_connectivity_batch.R 200 ../data/gsea_res_2019_09_24.RData
+2	0	p02r09n24.farnam.hpc.yale.internal	2019-09-26 00:28:26	2019-09-26 00:41:26	780.19	module load R/3.5.0-foss-2016b-avx2; Rscript gsea_connectivity_batch.R 500 ../data/gsea_res_2019_09_24.RData
+3	0	p02r09n24.farnam.hpc.yale.internal	2019-09-26 00:28:26	2019-09-26 00:42:01	815.60	module load R/3.5.0-foss-2016b-avx2; Rscript gsea_connectivity_batch.R 1000 ../data/gsea_res_2019_09_24.RData
+4	0	c20n02.farnam.hpc.yale.internal	2019-09-26 00:28:50	2019-09-26 00:49:08	1217.66	module load R/3.5.0-foss-2016b-avx2; Rscript gsea_connectivity_batch.R 1500 ../data/gsea_res_2019_09_24.RData
+5	0	c13n11.farnam.hpc.yale.internal	2019-09-26 00:28:51	2019-09-26 00:49:10	1219.90	module load R/3.5.0-foss-2016b-avx2; Rscript gsea_connectivity_batch.R 2000 ../data/gsea_res_2019_09_24.RData
+6	0	c13n11.farnam.hpc.yale.internal	2019-09-26 00:28:51	2019-09-26 00:49:44	1253.06	module load R/3.5.0-foss-2016b-avx2; Rscript gsea_connectivity_batch.R 3000 ../data/gsea_res_2019_09_24.RData
+7	0	c18n04.farnam.hpc.yale.internal	2019-09-26 00:28:51	2019-09-26 00:51:00	1329.34	module load R/3.5.0-foss-2016b-avx2; Rscript gsea_connectivity_batch.R 4000 ../data/gsea_res_2019_09_24.RData
+8	0	c18n04.farnam.hpc.yale.internal	2019-09-26 00:28:51	2019-09-26 00:51:20	1349.31	module load R/3.5.0-foss-2016b-avx2; Rscript gsea_connectivity_batch.R 5000 ../data/gsea_res_2019_09_24.RData

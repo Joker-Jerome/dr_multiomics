@@ -1,0 +1,10 @@
+4	1	bigmem04.grace.hpc.yale.internal	2019-09-25 17:07:22	2019-09-25 17:07:23	1.07	Rscript gsea_connectivity_batch.R 1500 ../data/gsea_res_2019_09_24.RData
+5	1	bigmem04.grace.hpc.yale.internal	2019-09-25 17:07:22	2019-09-25 17:07:23	1.01	Rscript gsea_connectivity_batch.R 2000 ../data/gsea_res_2019_09_24.RData
+7	1	bigmem04.grace.hpc.yale.internal	2019-09-25 17:07:22	2019-09-25 17:07:23	1.07	Rscript gsea_connectivity_batch.R 4000 ../data/gsea_res_2019_09_24.RData
+6	1	bigmem04.grace.hpc.yale.internal	2019-09-25 17:07:22	2019-09-25 17:07:23	1.02	Rscript gsea_connectivity_batch.R 3000 ../data/gsea_res_2019_09_24.RData
+0	1	bigmem03.grace.hpc.yale.internal	2019-09-25 17:07:22	2019-09-25 17:07:24	1.89	Rscript gsea_connectivity_batch.R 100 ../data/gsea_res_2019_09_24.RData
+3	1	bigmem03.grace.hpc.yale.internal	2019-09-25 17:07:22	2019-09-25 17:07:24	1.89	Rscript gsea_connectivity_batch.R 1000 ../data/gsea_res_2019_09_24.RData
+2	1	bigmem03.grace.hpc.yale.internal	2019-09-25 17:07:22	2019-09-25 17:07:24	1.89	Rscript gsea_connectivity_batch.R 500 ../data/gsea_res_2019_09_24.RData
+1	1	bigmem03.grace.hpc.yale.internal	2019-09-25 17:07:22	2019-09-25 17:07:24	1.93	Rscript gsea_connectivity_batch.R 200 ../data/gsea_res_2019_09_24.RData
+8	1	bigmem03.grace.hpc.yale.internal	2019-09-25 17:07:31	2019-09-25 17:07:32	0.88	Rscript gsea_connectivity_batch.R 5000 ../data/gsea_res_2019_09_24.RData
+9	1	bigmem03.grace.hpc.yale.internal	2019-09-25 17:07:31	2019-09-25 17:07:32	0.85	Rscript gsea_connectivity_batch.R 10000 ../data/gsea_res_2019_09_24.RData

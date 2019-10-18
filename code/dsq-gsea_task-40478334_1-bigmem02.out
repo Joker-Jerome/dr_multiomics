@@ -1,0 +1,28 @@
+
+Attaching package: ‘dplyr’
+
+The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
+------------------------------------------------------------------------------
+data.table + dplyr code now lives in dtplyr.
+Please library(dtplyr)!
+------------------------------------------------------------------------------
+
+Attaching package: ‘data.table’
+
+The following objects are masked from ‘package:dplyr’:
+
+    between, first, last
+
+Error in load(data_file) : 
+  bad restore file magic number (file may be corrupted) -- no data loaded
+In addition: Warning message:
+file ‘gsea_res_2019_09_24.RData’ has magic number 'RDX3'
+  Use of save versions prior to 2 is deprecated 
+Execution halted

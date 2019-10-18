@@ -1,0 +1,21 @@
+
+Attaching package: ‘dplyr’
+
+The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
+
+Attaching package: ‘data.table’
+
+The following objects are masked from ‘package:dplyr’:
+
+    between, first, last
+
+Error in loadNamespace(name) : there is no package called ‘fgsea’
+Calls: gsea_drug ... tryCatch -> tryCatchList -> tryCatchOne -> <Anonymous>
+Execution halted

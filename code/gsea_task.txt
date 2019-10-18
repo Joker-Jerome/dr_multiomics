@@ -1,0 +1,10 @@
+module load R/3.5.0-foss-2016b-avx2;  Rscript gsea_connectivity_batch.R 100 ../data/gsea_res_2019_09_24.RData
+module load R/3.5.0-foss-2016b-avx2; Rscript gsea_connectivity_batch.R 200 ../data/gsea_res_2019_09_24.RData
+module load R/3.5.0-foss-2016b-avx2; Rscript gsea_connectivity_batch.R 500 ../data/gsea_res_2019_09_24.RData
+module load R/3.5.0-foss-2016b-avx2; Rscript gsea_connectivity_batch.R 1000 ../data/gsea_res_2019_09_24.RData
+module load R/3.5.0-foss-2016b-avx2; Rscript gsea_connectivity_batch.R 1500 ../data/gsea_res_2019_09_24.RData
+module load R/3.5.0-foss-2016b-avx2; Rscript gsea_connectivity_batch.R 2000 ../data/gsea_res_2019_09_24.RData
+module load R/3.5.0-foss-2016b-avx2; Rscript gsea_connectivity_batch.R 3000 ../data/gsea_res_2019_09_24.RData
+module load R/3.5.0-foss-2016b-avx2; Rscript gsea_connectivity_batch.R 4000 ../data/gsea_res_2019_09_24.RData
+module load R/3.5.0-foss-2016b-avx2; Rscript gsea_connectivity_batch.R 5000 ../data/gsea_res_2019_09_24.RData
+module load R/3.5.0-foss-2016b-avx2; Rscript gsea_connectivity_batch.R 10000 ../data/gsea_res_2019_09_24.RData
