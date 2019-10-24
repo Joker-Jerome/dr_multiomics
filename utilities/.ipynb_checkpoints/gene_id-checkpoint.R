@@ -27,10 +27,12 @@ id_map <- function(id_vec, from_ref, to_ref, annotable = grch38) {
     by_str <- rlang::set_names(quo_name(from_ref), quo_name(from_ref))
     output_df <- id_df %>%
         left_join(annotable, by = by_str) %>%
+        distinct_(from_ref, .keep_all = T) %>%
         select_(to_ref)
     return(output_df[, to_ref])                              
     
 } 
+
                           
         
     

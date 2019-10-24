@@ -50,13 +50,13 @@ correlation_score_merged <- function(up_signature, down_signature, rank_matrix, 
 
 
 # data loading 
-correlation_score_df <- correlation_score(up_signature_df$entrezgene_id, down_signature_df$entrezgene_id, gene_rank_bing, compound_name)
-correlation_score_merged_df <- correlation_score(up_signature_df$entrezgene_id, down_signature_df$entrezgene_id, gene_rank_bing, compound_name)
+#correlation_score_df <- correlation_score(up_signature_df$entrezgene_id, down_signature_df$entrezgene_id, gene_rank_bing, compound_name)
+#correlation_score_merged_df <- correlation_score(up_signature_df$entrezgene_id, down_signature_df$entrezgene_id, gene_rank_bing, compound_name)
 
-correlation_score_df <- correlation_score_df %>% 
-    arrange(desc(connectivity_score))
-correlation_score_merged_df <- correlation_score_merged_df %>% 
-    arrange(desc(connectivity_score))
+#correlation_score_df <- correlation_score_df %>% 
+#    arrange(desc(connectivity_score))
+#correlation_score_merged_df <- correlation_score_merged_df %>% 
+#    arrange(desc(connectivity_score))
 
 
 
