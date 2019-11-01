@@ -3,7 +3,9 @@ drug_str <- "ACARBOSE AMLODIPINE ATORVASTATIN BETAINE CAFFEINE CENICRIVIROC CHOL
 
 nash_drugs <- tolower(unlist(stringr::str_split(drug_str, " ")))
 
+library(dplyr)
 check_overlap <- function(gsea_df, nash_drugs) {
+    gsea_df <- gsea_df %>% arrange(desc(connectivity_score))
     lincs_drugs <- tolower(gsea_df$compound_name)
 
     midx <- na.omit(match(nash_drugs, lincs_drugs))
