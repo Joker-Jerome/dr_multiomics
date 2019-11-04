@@ -9,8 +9,8 @@ library(dplyr)
     return( 0 )
   } else {
     
-    #if ( is.unsorted( V ) )
-    #  V <- sort( V )
+    if ( is.unsorted( V ) )
+      V <- sort( V )
     d <- (1:t) / t - V / n
     a <- max( d )
     b <- -min( d ) + 1 / t
@@ -63,11 +63,12 @@ ks_score <- function(up_signature, down_signature, rank_matrix, compound_name) {
     n = 1
     connectivity_score_vec <- c()
     gene_rank_bing <- rank_matrix
+    pert_vec <- gene_rank_bing[, 1]
+    up_signature <- up_signature[up_signature %in% pert_vec]   
+    down_signature <- down_signature[down_signature %in% pert_vec]
     for (i in 1:ncol(gene_rank_bing)) {
         if (i %% 500 == 0)  { print(paste0("INFO: ", i, " Instances."))}
-        pert_vec <- gene_rank_bing[, i]
-        up_signature <- up_signature[up_signature %in% pert_vec]   
-        down_signature <- down_signature[down_signature %in% pert_vec]
+        
         # get teh rank
         up_v <- match(up_signature, pert_vec)
         down_v <- match(down_signature, pert_vec)
