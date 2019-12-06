@@ -80,6 +80,14 @@ visualize_enrichment_gene <- function(up_signature, down_signature, gene_rank_ma
 drug_idx <- function(drug_name, compound_name) {
     return(which(conpound_name == drug_name))
 }
+
+# extract top idx
+extract_top_idx <- function(score_df, top_n) {
+    idx <- order(score_df$connectivity_score, decreasing = T)[1:top_n]
+    #tmp_df <- score_df[order(score_df$connectivity_score, decreasing = T),][1:top_n,]
+    return(idx)
+    
+}
                           
         
     
