@@ -1,0 +1,57 @@
+```{r}
+options(stringsAsFactors=F)
+suppressPackageStartupMessages(T)
+#library(gplots) 
+#library(GEOquery)
+library(biomaRt)
+library(sva)
+library(data.table)
+library(dplyr)
+library(clusterProfiler)
+library(org.Hs.eg.db)
+library(dplyr)
+
+```
+
+
+```{r}
+ln <- load("~/Projects/NASH/signature_list_twas_significant_unique.RData")
+ln
+```
+
+# gene list 
+```{r}
+names(signature_list_twas_significant_unique)
+
+```
+
+
+# pathway analysis
+```{r}
+go_res_twas <- list()
+trait_vec <- names(signature_list_twas_significant_unique)
+for (gene_set in trait_vec) {
+    tmp_geneset <- signature_list_twas_significant_unique[[gene_set]]$gene
+    tmp_geneset_ez <- bitr(tmp_geneset, fromType="SYMBOL", toType="ENTREZID", OrgDb="org.Hs.eg.db")
+    enriched_res_bp <- enrichGO(tmp_geneset_ez$ENTREZID, OrgDb = org.Hs.eg.db, ont = "BP")
+    enriched_res_mf <- enrichGO(tmp_geneset_ez$ENTREZID, OrgDb = org.Hs.eg.db, ont = "MF")
+    enriched_res_cc <- enrichGO(tmp_geneset_ez$ENTREZID, OrgDb = org.Hs.eg.db, ont = "CC")
+    go_res_twas[[gene_set]] <- list(geneset = tmp_geneset_ez, 
+                               enriched_res_bp = enriched_res_bp,
+                               enriched_res_mf = enriched_res_mf,
+                               enriched_res_cc = enriched_res_cc)
+}
+
+
+
+signature_list_twas_significant_unique[["BMI_GIANT_2015"]]
+```
+
+
+```{r}
+
+
+pdf
+dotplot(go_res[[module_enriched[1]]]$enriched_res_bp)
+```
+
