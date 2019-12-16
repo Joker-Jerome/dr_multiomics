@@ -1,0 +1,556 @@
+---
+title: "nash_signature_comparison"
+author: "Jerome"
+date: "9/23/2019"
+output: html_document
+---
+
+
+```{r}
+library(dplyr)
+
+ln1 <- load("~/Projects/NASH/case_control_deseq.RData")
+ln2 <- load("~/Projects/NASH/case_control_exp.RData")
+ln3 <- load("~/Downloads/res_df_0721.RData")
+ln4 <- load("~/Downloads/cc_gene_id.RData")
+
+
+head(res_df)
+
+res_df$logFC <- as.numeric(as.character(res_df$logFC))
+
+res_df$log2FC <- log2(exp(res_df$logFC))
+
+res_df$P_adjusted <- as.numeric(as.character(res_df$P_adjusted))
+
+head(joint_table)
+
+pair_sig <- res_df %>% 
+    filter(P_adjusted < 0.05)
+
+cc_sig <- joint_table %>%
+    filter(padj < 0.05)
+
+dim(pair_sig)
+dim(cc_sig)
+
+# paired 
+up_res_pair <- pair_sig %>%
+    filter(log2FC > 0)
+down_res_pair <- pair_sig %>%
+    filter(log2FC < 0)
+
+# flipping based on pheno
+cc_sig_hg <- cc_sig %>% 
+    left_join(gene_id, by = c("gene_id" = "ensembl_gene_id"))
+up_res_cc <- cc_sig_hg %>%
+    filter(log2FoldChange < 0)
+down_res_cc <- cc_sig_hg %>%
+    filter(log2FoldChange > 0)
+
+
+tmp_gene_id <- clusterProfiler::bitr(up_res_pair$gene_id, fromType="SYMBOL", toType="ENTREZID", OrgDb="org.Hs.eg.db")
+
+up_res_pair_ez <-  tmp_gene_id %>% 
+    left_join(up_res_pair, by = c("SYMBOL" = "gene_id")) %>%
+    arrange(P_adjusted)
+
+tmp_gene_id <- clusterProfiler::bitr(down_res_pair$gene_id, fromType="SYMBOL", toType="ENTREZID", OrgDb="org.Hs.eg.db")
+
+down_res_pair_ez <-  tmp_gene_id %>% 
+    left_join(down_res_pair, by = c("SYMBOL" = "gene_id")) %>%
+    arrange(P_adjusted)
+
+```
+
+
+```{r}
+# save all the interediate results
+save(up_res_cc, up_res_pair_ez, down_res_cc, down_res_pair_ez, up_signature_df, down_signature_df, gene_rank_bing, compound_name, ks_score_df_cc, ks_score_df_pair, ks_score_df, file = "~/Projects/NASH/exp_res_ks_20191002.RData")
+#upload library
+source("./dr_multiomics/code/ks_connectivity.R")
+
+# case control
+ks_score_vec_cc <- ks_score(up_res_cc$entrezgene, down_res_cc$entrezgene, gene_rank_bing, compound_name)
+ks_score_df_cc <- ks_score_vec_cc %>% 
+    arrange(desc(connectivity_score))
+
+# paired 
+
+
+ks_score_vec_pair <- ks_score(up_res_pair_ez$ENTREZID, down_res_pair_ez$ENTREZID, gene_rank_bing, compound_name)
+ks_score_df_pair <- ks_score_vec_pair %>% 
+    arrange(desc(connectivity_score))
+
+
+
+```
+
+# enrichment results
+
+```{r}
+check_overlap(ks_score_df_cc, nash_drugs)
+check_overlap(ks_score_df_pair, nash_drugs)
+check_overlap(ks_score_df, nash_drugs)
+
+
+```
+
+
+```{r}
+#correlation_score_df_cc <- correlation_score(up_res_cc$entrezgene, down_res_cc$entrezgene, gene_rank_bing, compound_name)
+#correlation_score_df <- correlation_score_df %>% 
+#    arrange(desc(connectivity_score))
+
+# case control
+correlation_score_merged_df_cc <- correlation_score_merged(up_res_cc$entrezgene, down_res_cc$entrezgene, gene_rank_bing, compound_name)
+correlation_score_merged_df_cc <- correlation_score_merged_df_cc %>% 
+    arrange(desc(connectivity_score))
+
+# pair 
+correlation_score_merged_df_pair <- correlation_score_merged(up_res_pair_ez$ENTREZID, down_res_pair_ez$ENTREZID, gene_rank_bing, compound_name)
+correlation_score_merged_df_pair <- correlation_score_merged_df_pair %>% 
+    arrange(desc(connectivity_score))
+
+
+# reversible 
+correlation_score_merged_df <- correlation_score_merged(up_signature_df$entrezgene_id, down_signature_df$entrezgene_id, gene_rank_bing, compound_name)
+correlation_score_merged_df <- correlation_score_merged_df %>% 
+    arrange(desc(connectivity_score))
+```
+
+
+# check overlap
+```{r}
+check_overlap <- function(gsea_df, nash_drugs) {
+    lincs_drugs <- tolower(gsea_df$compound_name)
+
+    midx <- na.omit(match(nash_drugs, lincs_drugs))
+    overlapped_drugs <- lincs_drugs[midx]
+    sum_overlap <- ifelse(lincs_drugs %in% overlapped_drugs, 1, 0)
+    #sum_overlap_top5 <- ifelse(lincs_drugs[(5774-289+1):5774] %in% overlapped_drugs, 1, 0)
+    sum_overlap_top5 <- ifelse(lincs_drugs[1:289] %in% overlapped_drugs, 1, 0)
+    #sum_overlap_top10 <- ifelse(lincs_drugs[(5774-578+1):5774] %in% overlapped_drugs, 1, 0)
+    sum_overlap_top10 <- ifelse(lincs_drugs[1:578] %in% overlapped_drugs, 1, 0)
+    sum_overlap_top_all <- ifelse(lincs_drugs %in% overlapped_drugs, 1, 0)
+    return(c(sum(sum_overlap_top5), sum(sum_overlap_top10)))
+}
+
+
+check_overlap_sig <- function(gsea_df, nash_drugs, cutoff_5, cutoff_10 ) {
+    gsea_df$compound_name <- tolower(gsea_df$compound_name)
+    midx <- na.omit(match(nash_drugs, lincs_drugs))
+    overlapped_drugs <- lincs_drugs[midx]
+    #sum_overlap_top5 <- ifelse(lincs_drugs[(5774-289+1):5774] %in% overlapped_drugs, 1, 0)
+    upper_5 <- gsea_df %>%
+        filter(connectivity_score >= cutoff_5)
+    upper_10 <- gsea_df %>%
+        filter(connectivity_score >= cutoff_10)
+    sum_overlap_top5 <- ifelse(upper_5$compound_name %in% overlapped_drugs, 1, 0)
+    sum_overlap_top10 <- ifelse(upper_10$compound_name %in% overlapped_drugs, 1, 0)             #sum_overlap_top_all <- ifelse(lincs_drugs %in% overlapped_drugs, 1, 0)
+    return(c(sum(sum_overlap_top5), sum(sum_overlap_top10)))
+}
+```
+
+# Overlap checking  
+```{r}
+check_overlap(ks_score_df_cc, nash_drugs)
+check_overlap(ks_score_df_pair, nash_drugs)
+check_overlap(ks_score_df, nash_drugs)
+
+
+
+```
+
+```{r}
+check_overlap(correlation_score_merged_df_cc, nash_drugs)
+check_overlap(correlation_score_merged_df_pair, nash_drugs)
+check_overlap(correlation_score_merged_df, nash_drugs)
+
+```
+
+
+```{r}
+check_overlap(gsea_updated_list[[100]], nash_drugs)
+check_overlap(gsea_updated_list[[200]], nash_drugs)
+check_overlap(gsea_updated_list[[500]], nash_drugs)
+check_overlap(gsea_updated_list[[1000]], nash_drugs)
+check_overlap(gsea_updated_list[[1500]], nash_drugs)
+check_overlap(gsea_updated_list[[2000]], nash_drugs)
+check_overlap(gsea_updated_list[[3000]], nash_drugs)
+check_overlap(gsea_updated_list[[4000]], nash_drugs)
+check_overlap(gsea_updated_list[[5000]], nash_drugs)
+
+```
+
+
+
+# Enrichment test
+```{r}
+enrichment_phyper <- function(top_5_count, top_10_count, overlapped_count, total_count ) {
+    p_5 <- phyper(top_5_count, overlapped_count, total_count-overlapped_count, round(total_count*0.05), lower.tail = F)
+    p_10 <- phyper(top_5_count, overlapped_count, total_count-overlapped_count, round(total_count*0.10), lower.tail = F)
+    return(c(p_5, p_10))
+} 
+
+overlapped_count <- 30
+total_count <- 5774
+enrichment_phyper(0, 1, overlapped_count, total_count)
+enrichment_phyper(9, 10, overlapped_count, total_count)
+enrichment_phyper(11, 12, overlapped_count, total_count)
+
+```
+
+```{r}
+enrichment_phyper(0, 2, overlapped_count, total_count)
+enrichment_phyper(7, 9, overlapped_count, total_count)
+enrichment_phyper(9, 10, overlapped_count, total_count)
+```
+
+
+
+```{r}
+gsea_updated_list <- list()
+num_vec <- c(100, 200, 500, 1000, 1500, 2000, 3000, 4000, 5000)
+for (i in num_vec) {
+    tmp_file <- paste0("./dr_multiomics/data/gsea_connectivity_score_list_", i, ".RData")
+    load(tmp_file)
+    colnames(gsea_list$gsea_df_ordered) <- c("compound_name" , "connectivitity_score") 
+    gsea_updated_list[[i]] <- gsea_list$gsea_df_ordered
+}
+
+ln_gsea <- load("./dr_multiomics/data/gsea_connectivity_score_list_200.RData")
+
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+```{r}
+draw.pairwise.venn(length(up_res_pair$gene), length(up_res_cc$hgnc_symbol), length(up_inter), category = c("Upregulated after NASH intervention", "Downregulated in NASH/control"), lty = rep("blank", 
+    2), fill = c("pink","light blue"), alpha = rep(0.5, 2), cat.pos = c(0, 
+    0), cat.dist = rep(0.025, 2), scaled = FALSE)
+```
+
+```{r pressure, echo=FALSE}
+draw.pairwise.venn(length(up_res_pair$gene), length(up_res_cc$hgnc_symbol), length(up_inter), category = c("Upregulated after NASH intervention", "Downregulated in NASH/control"), lty = rep("blank", 
+    2), fill = c("pink","light blue"), alpha = rep(0.5, 2), cat.pos = c(0, 
+    0), cat.dist = rep(0.025, 2), scaled = FALSE)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+
+
+```{r}
+draw.pairwise.venn(length(down_res_pair$gene), length(down_res_cc$hgnc_symbol), length(down_inter), category = c("Downregulated after NASH intervention", "Upregulated in NASH/control"), lty = rep("blank", 
++                                                                                                                                                                                                       2), fill = c("light blue", "pink"), alpha = rep(0.5, 2), cat.pos = c(0, +                                                                                                                                                                                                                                                                            0), cat.dist = rep(0.025, 2), scaled = FALSE)
+```
+
+
+```{r}
+library(clusterProfiler)
+
+up_inter_ez = bitr(up_inter, fromType="SYMBOL", toType="ENTREZID", OrgDb="org.Hs.eg.db")
+down_inter_ez = bitr(down_inter, fromType="SYMBOL", toType="ENTREZID", OrgDb="org.Hs.eg.db")
+ru_bp <- enrichGO(up_inter_ez$ENTREZID, OrgDb = org.Hs.eg.db, ont = "BP")
+rd_bp <- enrichGO(down_inter_ez$ENTREZID, OrgDb = org.Hs.eg.db, ont = "BP")
+
+
+dotplot(ru_bp)
+dotplot(rd_bp)
+
+```
+```{r}
+ru_cc <- enrichGO(up_inter_ez$ENTREZID, OrgDb = org.Hs.eg.db, ont = "CC")
+rd_cc <- enrichGO(down_inter_ez$ENTREZID, OrgDb = org.Hs.eg.db, ont = "CC")
+
+dotplot(ru_cc)
+dotplot(rd_cc)
+
+
+```
+
+# ensembl
+```{r}
+library(clusterProfiler)
+library(org.Hs.eg.db)
+genelist_ez = bitr(genelist, fromType="ENSEMBL", toType="ENTREZID", OrgDb="org.Hs.eg.db")
+```
+
+```{r}
+#ru_bp <- enrichGO(ru_inter_ez, keytype = "ENTREZID", OrgDb = org.Hs.eg.db, ont = "BP")
+ru_mf <- enrichGO(up_inter_ez$ENTREZID, OrgDb = org.Hs.eg.db, ont = "MF")
+rd_mf <- enrichGO(down_inter_ez$ENTREZID, OrgDb = org.Hs.eg.db, ont = "MF")
+
+```
+
+# NASH DRUGS
+
+```{r}
+nash_drug <- fread("~/Downloads/SearchResults.tsv", sep = "\t")
+```
+```{r}
+
+idx <- startsWith(nash_drug$Interventions, "Drug")
+drug_list <- nash_drug$Interventions[idx]
+
+
+drug_total <- c()
+for (drug_str in drug_list) { 
+    drug_vec <- c()
+    tmp_str <- unlist(strsplit(drug_str, split = "\\|"))
+    for (str in tmp_str) {
+        if (startsWith(str, "Drug")) {
+            drug <- unlist(strsplit(str, split = "Drug: "))[2]
+            drug_vec <- c(drug_vec, drug)
+        }
+    }
+    drug_total <- c(drug_total, drug_vec)
+}
+
+first_drug <- unique(drug_total)
+
+second_drug <- c()
+for (item in first_drug) {
+    if (!grepl("placebo", item, ignore.case = T)) {
+        second_drug <- c(second_drug, item)
+    }
+}
+
+
+write.table(second_drug, "~/Projects/NASH/drug_list.csv", sep = ",", quote = F, row.names = F)
+dl_v1 <- fread("drug_list.csv")
+
+third_drug <- unique(tolower(dl_v1$x))
+write.table(third_drug, "~/Projects/NASH/drug_list.csv", sep = ",", quote = F, row.names = F, col.names = F)
+
+```
+
+
+```{r}
+library(data.table)
+options(stringsAsFactors = FALSE)
+v6v7 <- fread("~/Downloads/v6v7.csv")
+
+df <- v6v7
+
+library(ggplot2)
+library(scales)
+theme_set(theme_classic())
+
+# prep data
+colnames(df)[1] <- "Tissue"
+colnames(df)[7] <- "N2"
+left_label <- paste(df$Tissue, df$N1,sep=", ")
+right_label <- paste(df$Tissue, df$N,sep=", ")
+df$N <- as.numeric(df$N)
+df$N2 <- as.numeric(df$N2)
+df$N[is.na(df$N)] <- 0
+df$class <- ifelse((df$N - df$N2) > 0, "red", "green")
+colnames(df) <- c("Tissue","N","tot","hsq","hsq (se)","hsq P<0.01","N2","tot2","hsq2","hsq (se)2","hsq P<0.01_2", "class")
+
+# Plot
+p <- ggplot(df) + geom_segment(aes(x=1, xend=2, y=N, yend=N2, col=class), size=.75, show.legend=F) +
+                  geom_vline(xintercept=1, linetype="dashed", size=.1) + 
+                  geom_vline(xintercept=2, linetype="dashed", size=.1) +
+                  scale_color_manual(labels = c("Up", "Down"), 
+                                     values = c("green"="#00ba38", "red"="#f8766d")) +  # color of lines
+                  labs(x="", y="Mean GdpPerCap") +  # Axis labels
+                  xlim(.5, 2.5) + ylim(0,(1.1*(max(df$N, df$N2))))  # X and Y axis limits
+
+# Add texts
+p <- p + geom_text(label=left_label, y=df$N, x=rep(1, NROW(df)), hjust=1.1, size=3.5)
+p <- p + geom_text(label=right_label, y=df$N2, x=rep(2, NROW(df)), hjust=-0.1, size=3.5)
+p <- p + geom_text(label="Version 6", x=1, y=1.1*(max(df$N, df$N2)), hjust=1.2, size=5)  # title
+p <- p + geom_text(label="Version 7", x=2, y=1.1*(max(df$N, df$N2)), hjust=-0.1, size=5)  # title
+
+# Minify theme
+p + theme(panel.background = element_blank(), 
+           panel.grid = element_blank(),
+           axis.ticks = element_blank(),
+           axis.text.x = element_blank(),
+           panel.border = element_blank(),
+           plot.margin = unit(c(1,2,1,2), "cm"))
+```
+
+
+
+```{r}
+head(df)
+
+old_idx <- which(df$N != 0)
+perc_increased <- mean(((df$N2 - df$N)/df$N)[old_idx])
+```
+
+
+
+```{r}
+library(ggalt)
+df1 <- df[1:25,]
+df2 <- df[26:49,]
+gg <- ggplot(df1, aes(x=N, xend=N2, y=Tissue, group=Tissue)) + 
+        geom_dumbbell(color="#a3c4dc", 
+                      size=0.75, 
+                      colour_xend="#0e668b") + 
+        scale_x_continuous() + 
+        labs(x="sample", 
+             y="tissue", 
+             title="GTEx Sample Change: Version 6 vs Version 7", 
+             #caption="Source: https://github.com/hrbrmstr/ggalt") +
+        theme(plot.title = element_text(hjust=0.5, face="bold"),
+              plot.background=element_rect(fill="#f7f7f7"),
+              panel.background=element_rect(fill="#f7f7f7"),
+              panel.grid.minor=element_blank(),
+              panel.grid.major.y=element_blank(),
+              panel.grid.major.x=element_line(),
+              axis.ticks=element_blank(),
+              legend.position="top",
+              panel.border=element_blank())
+        )
+plot(gg)
+
+
+gg <- ggplot(df2, aes(x=N, xend=N2, y=Tissue, group=Tissue)) + 
+        geom_dumbbell(color="#a3c4dc", 
+                      size=0.75, 
+                      colour_xend="#0e668b") + 
+        scale_x_continuous() + 
+        labs(x="sample", 
+             y="tissue", 
+             title="GTEx Sample Change: Version 6 vs Version 7", 
+             #caption="Source: https://github.com/hrbrmstr/ggalt") +
+        theme(plot.title = element_text(hjust=0.5, face="bold"),
+              plot.background=element_rect(fill="#f7f7f7"),
+              panel.background=element_rect(fill="#f7f7f7"),
+              panel.grid.minor=element_blank(),
+              panel.grid.major.y=element_blank(),
+              panel.grid.major.x=element_line(),
+              axis.ticks=element_blank(),
+              legend.position="top",
+              panel.border=element_blank())
+        )
+plot(gg)
+        
+        
+```
+
+
+```{r}
+library(ggalt)
+library(dplyr)
+
+df_v8 <- fread("~/Downloads/GTEx Portal.csv")
+
+
+
+
+df <- v6v7
+
+library(ggplot2)
+library(scales)
+theme_set(theme_classic())
+
+# prep data
+colnames(df)[1] <- "Tissue"
+colnames(df)[7] <- "N2"
+left_label <- paste(df$Tissue, df$N1,sep=", ")
+right_label <- paste(df$Tissue, df$N,sep=", ")
+df$N <- as.numeric(df$N)
+df$N2 <- as.numeric(df$N2)
+df$N[is.na(df$N)] <- 0
+df$class <- ifelse((df$N - df$N2) > 0, "red", "green")
+colnames(df) <- c("Tissue","N","tot","hsq","hsq (se)","hsq P<0.01","N2","tot2","hsq2","hsq (se)2","hsq P<0.01_2", "class")
+df1 <- df[1:25,]
+df2 <- df[26:49,]
+
+joint_678 <- df %>%
+        right_join(df_v8, by = c("Tissue" = "Tissue"))
+
+colnames(joint_678)[14] <- "N3"
+
+df1 <-  joint_678[1:27,]
+df2 <- joint_678[28:54, ]
+gg1 <- ggplot(df1, aes(x=N, xend=N3, y=Tissue, group=Tissue)) + 
+        geom_dumbbell(color="#a3c4dc", 
+                      size=0.75, 
+                      colour_xend="#0e668b") + 
+        scale_x_continuous() + 
+        labs(x="sample", 
+             y="tissue", 
+             title="GTEx Sample Change: V6 vs V8", 
+             #caption="Source: https://github.com/hrbrmstr/ggalt") +
+        theme(plot.title = element_text(hjust=0.5, face="bold"),
+              plot.background=element_rect(fill="#f7f7f7"),
+              panel.background=element_rect(fill="#f7f7f7"),
+              panel.grid.minor=element_blank(),
+              panel.grid.major.y=element_blank(),
+              panel.grid.major.x=element_line(),
+              axis.ticks=element_blank(),
+              legend.position="top",
+              panel.border=element_blank())
+        )
+plot(gg1)
+
+
+gg <- ggplot(df2, aes(x=N, xend=N3, y=Tissue, group=Tissue)) + 
+        geom_dumbbell(color="#a3c4dc", 
+                      size=0.75, 
+                      colour_xend="#0e668b") + 
+        scale_x_continuous() + 
+        labs(x="sample", 
+             y="tissue", 
+             title="GTEx Sample Change:  V6 vs V8", 
+             #caption="Source: https://github.com/hrbrmstr/ggalt") +
+        theme(plot.title = element_text(hjust=0.5, face="bold"),
+              plot.background=element_rect(fill="#f7f7f7"),
+              panel.background=element_rect(fill="#f7f7f7"),
+              panel.grid.minor=element_blank(),
+              panel.grid.major.y=element_blank(),
+              panel.grid.major.x=element_line(),
+              axis.ticks=element_blank(),
+              legend.position="top",
+              panel.border=element_blank())
+        )
+plot(gg)
+
+zero_idx <- which(joint_678$N == 0)
+mean((joint_678[-zero_idx, "N3"] - joint_678[-zero_idx, "N"])/joint_678[-zero_idx, "N"])
+```
+
+
+
+
+# Truven polypharmacy datasets
+```{r}
+df_truven <- fread("~/Downloads/db_drugs_2s.tsv")
+colnames(df_truven)
+
+hist(as.numeric(df_truven$exact_exposure_count))
+max(df_truven$exact_exposure_count)
+which.max(df_truven$exact_exposure_count)
+df_truven$exact_exposure_count[3]
+exposure_count <- df_truven$exact_exposure_count[-3]
+
+hist(as.numeric(exposure_count))
+mean(as.numeric(exposure_count))
+
+exposure_count <- df_truven$exact_exposure_count
+exposure_count[exposure_count == "<100"] <- 100
+exposure_count <- as.numeric(exposure_count)
+
+quantile(exposure_count, c(.75, .90))
+select_idx <- exposure_count > 178
+df_sig <- df_truven[select_idx,]
+drugpair_polypharmacy_top10 <- df_sig
+save(drugpair_polypharmacy_top10, file = "~/Projects/drugbank/drugpair_polypharmacy_top10.RData")
+```
+
+# DDI 
+```{r}
+
+df_drugbank <- read.xlsx("~/Downloads/pnas.1803294115.sd02.xlsx", sheetName = "Dataset S2")
+
+
+```
+
