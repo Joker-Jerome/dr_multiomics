@@ -189,7 +189,7 @@ check_overlap(gsea_updated_list[[5000]], nash_drugs)
 ```{r}
 enrichment_phyper <- function(top_5_count, top_10_count, overlapped_count, total_count ) {
     p_5 <- phyper(top_5_count, overlapped_count, total_count-overlapped_count, round(total_count*0.05), lower.tail = F)
-    p_10 <- phyper(top_5_count, overlapped_count, total_count-overlapped_count, round(total_count*0.10), lower.tail = F)
+    p_10 <- phyper(top_10_count, overlapped_count, total_count-overlapped_count, round(total_count*0.10), lower.tail = F)
     return(c(p_5, p_10))
 } 
 
